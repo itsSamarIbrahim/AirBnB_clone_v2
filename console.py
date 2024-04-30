@@ -113,18 +113,58 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
+#    def do_create(self, args):
+#        """ Create an object of any class"""
+#        if not args:
+#            print("** class name missing **")
+#            return
+#        elif args not in HBNBCommand.classes:
+#            print("** class doesn't exist **")
+#            return
+#        new_instance = HBNBCommand.classes[args]()
+#        storage.save()
+#        print(new_instance.id)
+#        storage.save()
+
+        
     def do_create(self, args):
-        """ Create an object of any class"""
-        if not args:
+        """Create a new object"""
+        if not arg:
             print("** class name missing **")
             return
-        elif args not in HBNBCommand.classes:
+
+        args = shlex.split(arg)
+        class_name = args[0]
+        params = args[1:]
+
+        if class_name not in self.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
-        print(new_instance.id)
-        storage.save()
+
+        # Prepare kwargs dictionary
+        kwargs = {}
+        for param in params:
+            try:
+                key, value = param.split('=')
+                # Convert value according to type
+                if value.startswith('"') and value.endswith('"'):
+                    value = value[1:-1].replace('_', ' ').replace('\\"', '"')
+                elif '.' in value:
+                    value = float(value)
+                else:
+                    value = int(value)
+                kwargs[key] = value
+            except ValueError:
+                # Skip parameters that can't be recognized correctly
+                continue
+
+        # Create instance with given parameters
+        try:
+            new_instance = self.classes[class_name](**kwargs)
+            new_instance.save()
+            print(new_instance.id)
+        except Exception as e:
+            print("** Failed to create instance: {} **".format(e))
 
     def help_create(self):
         """ Help information for the create method """
