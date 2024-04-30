@@ -2,8 +2,6 @@
 """ Console Module """
 import cmd
 import sys
-import shlex
-from _ast import arg
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -45,7 +43,7 @@ class HBNBCommand(cmd.Cmd):
         """
         _cmd = _cls = _id = _args = ''  # initialize line elements
 
-        # scan for general formating - i.e '.', '(', ')'
+        # scan for general formatting - i.e '.', '(', ')'
         if not ('.' in line and '(' in line and ')' in line):
             return line
 
@@ -60,7 +58,7 @@ class HBNBCommand(cmd.Cmd):
             if _cmd not in HBNBCommand.dot_cmds:
                 raise Exception
 
-            # if parantheses contain arguments, parse them
+            # if parentheses contain arguments, parse them
             pline = pline[pline.find('(') + 1:pline.find(')')]
             if pline:
                 # partition args: (<id>, [<delim>], [<*args>])
@@ -75,7 +73,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] is '{' and pline[-1] is'}'\
+                    if pline[0] is '{' and pline[-1] is '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -130,43 +128,27 @@ class HBNBCommand(cmd.Cmd):
 
         
     def do_create(self, args):
-        """Create a new object"""
-        if not arg:
-            print("** class name missing **")
-            return
-
-        args = shlex.split(arg)
-        class_name = args[0]
-        params = args[1:]
-
-        if class_name not in self.classes:
-            print("** class doesn't exist **")
-            return
-
-        # Prepare kwargs dictionary
-        kwargs = {}
-        for param in params:
-            try:
-                key, value = param.split('=')
-                # Convert value according to type
-                if value.startswith('"') and value.endswith('"'):
-                    value = value[1:-1].replace('_', ' ').replace('\\"', '"')
-                elif '.' in value:
-                    value = float(value)
-                else:
-                    value = int(value)
-                kwargs[key] = value
-            except ValueError:
-                # Skip parameters that can't be recognized correctly
-                continue
-
-        # Create instance with given parameters
+        """
+        Creates a new instance of BaseModel, saves it
+        Exceptions:
+            SyntaxError: when there is no args given
+            NameError: when there is no object taht has the name
+        """
         try:
-            new_instance = self.classes[class_name](**kwargs)
-            new_instance.save()
-            print(new_instance.id)
-        except Exception as e:
-            print("** Failed to create instance: {} **".format(e))
+            if not args:
+                raise SyntaxError()
+            my_list = args.split(" ")
+            if len(my_list) == 1:
+                obj = eval("{}()".format(my_list[0]))
+            else:
+                kwargs = HBNBCommand.parse_line(my_list[1:])
+                obj = eval("{}(**{})".format(my_list[0], kwargs))
+            obj.save()
+            print("{}".format(obj.id))
+        except SyntaxError:
+            print("** class name missing **")
+        except NameError:
+            print("** class doesn't exist **")
 
     def help_create(self):
         """ Help information for the create method """
@@ -229,7 +211,7 @@ class HBNBCommand(cmd.Cmd):
         key = c_name + "." + c_id
 
         try:
-            del(storage.all()[key])
+            del (storage.all()[key])
             storage.save()
         except KeyError:
             print("** no instance found **")
@@ -361,6 +343,43 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
+    @staticmethod
+    def parse_line(my_list=[]):
+        """This fuction will split up and convert a list of argument into
+        key value pairs. It will close clean and or convert the values from
+        their string to proper types if necessary.
+
+        Args:
+            list of key assigned a value via equal sign
+
+        Returns:
+            Dictionary
+        """
+        kwargs = dict()
+        for ele in my_list:
+            try:
+                key, val = tuple(ele.split('=', 1))
+                if val == '':
+                    continue
+            except ValueError:
+                continue
+            v = val
+            try:
+                v = float(val)
+                v = int(val)
+            except:
+                pass
+
+            if type(v) is str:
+                v = v[(v.find('"') + 1):(v.rfind('"'))] \
+                    .replace('_', ' ') \
+                    .strip()
+
+            if type(v) in (str, int, float):
+                kwargs.update({key: v})
+
+        return kwargs
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
