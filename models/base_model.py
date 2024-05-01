@@ -32,7 +32,8 @@ class BaseModel:
         if kwargs:
             for key, value in kwargs.items():
                 if key == 'created_at' or key == 'updated_at':
-                    value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
+                    if isinstance(value, str):
+                        value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
                 if key != '__class__' and hasattr(self.__class__, key):
                     setattr(self, key, value)
 
@@ -49,16 +50,40 @@ class BaseModel:
         storage.new(self)
         storage.save()
 
+#    def to_dict(self):
+#        """Convert instance into dict format"""
+#        dictionary = {}
+#        dictionary.update(self.__dict__)
+#        dictionary.update({'__class__':
+#                          (str(type(self)).split('.')[-1]).split('\'')[0]})
+#        for key, value in self.__dict__.items():
+#            if key != '_sa_instance_state':
+#                dictionary[key] = value
+#        dictionary['__class__'] = type(self).__name__
+#        dictionary['created_at'] = self.created_at.isoformat()
+#        dictionary['updated_at'] = self.updated_at.isoformat()
+#        dictionary.pop('_sa_instance_state')
+#        return dictionary
+    
     def to_dict(self):
-        """Convert instance into dict format"""
-        dictionary = {}
-        dictionary.update(self.__dict__)
-        dictionary.update({'__class__':
-                          (str(type(self)).split('.')[-1]).split('\'')[0]})
-        dictionary['created_at'] = self.created_at.isoformat()
-        dictionary['updated_at'] = self.updated_at.isoformat()
-        dictionary.pop('_sa_instance_state')
-        return dictionary
+        """Converts the object into a dictionary representation"""
+        obj_dict = self.__dict__.copy()
+
+        # Remove non-serializable attributes
+        non_serializable_attrs = ['_sa_instance_state']  # Add any other non-serializable attributes here
+        for attr in non_serializable_attrs:
+            obj_dict.pop(attr, None)
+
+        # Convert datetime objects to string representations
+        for key, value in obj_dict.items():
+            if isinstance(value, datetime):
+                obj_dict[key] = value.isoformat()
+
+        # Add the class name and id to the dictionary
+        obj_dict['__class__'] = self.__class__.__name__
+        obj_dict['id'] = self.id
+
+        return obj_dict
     
     def delete(self):
         """

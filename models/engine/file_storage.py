@@ -53,7 +53,12 @@ class FileStorage:
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
-                        self.all()[key] = classes[val['__class__']](**val)
+                        class_name = val['__class__']
+                        if class_name in classes:
+                            #self.all()[key] = classes[val['__class__']](**val)
+                            self.all()[key] = classes[class_name](**val)
+                        else:
+                            print(f"Unknown class '{class_name}' encountered in JSON data.")
         except FileNotFoundError:
             pass
         except json.decoder.JSONDecodeError:
