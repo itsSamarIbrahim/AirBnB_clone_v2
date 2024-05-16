@@ -12,7 +12,7 @@ env_hosts = ['54.82.208.14', '54.161.250.120']
 
 
 def do_pack():
-   """
+    """
     Create a tar gzipped archive of the directory web_static
     """
     time = datetime.now().strftime("%Y%m%d%H%M%S")
