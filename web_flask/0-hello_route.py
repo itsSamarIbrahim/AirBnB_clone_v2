@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-from flask import Flask
 """
 a script that starts a Flask web application:
 
@@ -9,6 +8,7 @@ a script that starts a Flask web application:
     You must use the option strict_slashes=False in your route
     definition
 """
+from flask import Flask
 
 app = Flask(__name__)
 
