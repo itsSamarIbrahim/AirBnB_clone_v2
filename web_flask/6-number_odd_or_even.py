@@ -126,8 +126,8 @@ def number_odd_or_even(n):
     else:
         odd_even = 'odd'
     # Render an HTML template with the number and whether it is odd or even
-    return render_template('6-number_odd_or_even.html', number=n,
-            odd_even=odd_even)
+    return render_template(
+            '6-number_odd_or_even.html', number=n, odd_even=odd_even)
 
 
 if __name__ == "__main__":
