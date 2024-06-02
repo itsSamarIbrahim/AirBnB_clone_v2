@@ -10,7 +10,6 @@ a script that starts a Flask web application:
     definition
 """
 
-
 app = Flask(__name__)
 
 
