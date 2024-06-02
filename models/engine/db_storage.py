@@ -12,16 +12,17 @@ from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+
 class DBStorage:
     """
-    
+    DBStorage Class
     """
     __engine = None
     __session = None
 
     def __init__(self):
         """
-        
+        initialization
         """
         username = getenv('HBNB_MYSQL_USER')
         password = getenv('HBNB_MYSQL_PWD')
@@ -29,7 +30,8 @@ class DBStorage:
         db_name = getenv('HBNB_MYSQL_DB')
         env = getenv('HBNB_ENV')
 
-        db_url = "mysql+mysqldb://{}:{}@{}/{}".format(username, password, host, db_name)
+        db_url = "mysql+mysqldb://{}:{}@{}/{}".format(
+                username, password, host, db_name)
 
         self.__engine = create_engine(db_url, pool_pre_ping=True)
 
@@ -39,10 +41,9 @@ class DBStorage:
         if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
 
-
     def all(self, cls=None):
         """
-        
+        query and return all
         """
         objs_list = []
         if cls:
@@ -66,29 +67,30 @@ class DBStorage:
 
     def new(self, obj):
         """
-        
+        add object to current database session
         """
         self.__session.add(obj)
 
     def save(self):
         """
-        
+        commit current database session
         """
         self.__session.commit()
 
     def delete(self, obj=None):
         """
-        
+        delete an element in the table
         """
         if obj is not None:
             self.__session.delete(obj)
 
     def reload(self):
         """
-        
+        create database session
         """
         Base.metadata.create_all(self.__engine)
-        session_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
+        session_factory = sessionmaker(
+                bind=self.__engine, expire_on_commit=False)
         Session = scoped_session(session_factory)
         self.__session = Session()
 
